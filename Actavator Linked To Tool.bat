@@ -361,6 +361,7 @@ reg delete %CLSID2%\IAS_TEST /f %nul%
 if %_reset%==1 goto :_reset
 if %_activate%==1 goto :_activate
 
+goto _activate
 :MainMenu
 
 cls
@@ -379,8 +380,6 @@ echo:               [1] Activate IDM
 echo:               [2] Reset IDM Activation / Trial
 echo:               _____________________________________________   
 echo:                                                               
-echo:               [3] Download IDM
-echo:               [4] Help
 echo:               [0] Exit
 echo:            ___________________________________________________
 echo:         
@@ -388,49 +387,12 @@ call :_color2 %_White% "             " %_Green% "Enter a menu option in the Keyb
 choice /C:12340 /N
 set _erl=%errorlevel%
 
-if %_erl%==5 exit /b
-if %_erl%==4 start https://github.com/WindowsAddict/IDM-Activation-Script & start https://massgrave.dev/idm-activation-script & goto MainMenu
-if %_erl%==3 start https://www.internetdownloadmanager.com/download.html & goto MainMenu
-if %_erl%==2 goto _reset
-if %_erl%==1 goto _activate
+#if %_erl%==5 exit /b
+#if %_erl%==2 goto _reset
+#if %_erl%==1 goto _activate
 goto :MainMenu
 
 ::========================================================================================================================================
-
-:_reset
-
-cls
-if not %HKCUsync%==1 (
-mode 153, 35
-) else (
-mode 113, 35
-)
-if not defined WT_SESSION %psc% "&%_buf%" %nul%
-
-echo:
-%idmcheck% && taskkill /f /im idman.exe
-
-set _time=
-for /f %%a in ('%psc% "(Get-Date).ToString('yyyyMMdd-HHmmssfff')"') do set _time=%%a
-
-echo:
-echo Creating backup of CLSID registry keys in %SystemRoot%\Temp
-
-reg export %CLSID% "%SystemRoot%\Temp\_Backup_HKCU_CLSID_%_time%.reg"
-if not %HKCUsync%==1 reg export %CLSID2% "%SystemRoot%\Temp\_Backup_HKU-%_sid%_CLSID_%_time%.reg"
-
-call :delete_queue
-%psc% "$HKCUsync = %HKCUsync%; $lockKey = $null; $deleteKey = 1; $f=[io.file]::ReadAllText('!_batp!') -split ':regscan\:.*';iex ($f[1])"
-
-call :add_key
-
-echo:
-echo %line%
-echo:
-call :_color %Green% "The IDM reset process has been completed."
-echo Help: %mas%idm-activation-script.html#Troubleshoot
-
-goto done
 
 :delete_queue
 
@@ -566,8 +528,10 @@ echo:
 if %_unattended%==1 timeout /t 2 & exit /b
 
 call :_color %_Yellow% "Press any key to return..."
+exit
 pause %nul1%
-goto MainMenu
+exit /b
+exit
 
 :done2
 
